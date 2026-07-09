@@ -6,18 +6,20 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          target: x86_64-pc-windows-msvc
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
       - run: npm install
-      - run: npm run build
-      - run: cargo build --release --manifest-path src-tauri/Cargo.toml
+      - name: Build and collect
+        shell: pwsh
+        run: |
+          npx tauri build
+          Copy-Item src-tauri\target\release\keke-pet.exe keke-pet.exe -ErrorAction SilentlyContinue
+          Copy-Item src-tauri\target\x86_64-pc-windows-msvc\release\keke-pet.exe keke-pet.exe -ErrorAction SilentlyContinue
+          Get-ChildItem *.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/upload-artifact@v4
         with:
           name: keke-pet
-          path: src-tauri/target/release/keke-pet.exe
+          path: keke-pet.exe
