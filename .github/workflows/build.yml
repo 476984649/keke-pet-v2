@@ -10,16 +10,23 @@ jobs:
         with:
           node-version: '22'
       - run: npm install
-      - name: Build and collect
+
+      - name: Build
         shell: pwsh
-        run: |
-          npx tauri build
-          Copy-Item src-tauri\target\release\keke-pet.exe keke-pet.exe -ErrorAction SilentlyContinue
-          Copy-Item src-tauri\target\x86_64-pc-windows-msvc\release\keke-pet.exe keke-pet.exe -ErrorAction SilentlyContinue
-          Get-ChildItem *.exe
+        run: npx tauri build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Find ALL exe files
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host "=== Searching recursively for *.exe ==="
+          Get-ChildItem -Path . -Recurse -Filter *.exe -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_.FullName " - " $_.Length "bytes" }
+          Write-Host "=== Done ==="
+
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: keke-pet
-          path: keke-pet.exe
+          path: "**/keke-pet.exe"
